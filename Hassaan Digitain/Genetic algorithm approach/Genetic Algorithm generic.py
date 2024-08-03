@@ -17,8 +17,8 @@ def calculate_G2(P, a, B, E, alpha):
 
 # Parameters for the genetic algorithm
 POPULATION_SIZE = 100
-GENERATIONS = 20
-MUTATION_RATE = 0.01
+GENERATIONS = 100
+MUTATION_RATE = 0.1
 
 # Create an individual
 def create_individual():
