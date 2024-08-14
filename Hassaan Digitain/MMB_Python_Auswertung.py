@@ -20,19 +20,25 @@ def read_csv(file_path):
             reader = csv.reader(file, delimiter=';')
             next(reader)  # Skip header
             for row in reader:
-                # Replace commas with periods
-                row = [entry.replace(',', '.') for entry in row]
-                if float(row[2]) >= 0:
-                    displacement.append(float(row[2]))  # Column 3 for Displacement
-                    force.append(float(row[1]))  # Column 2 for Force
+                    # Replace commas with periods
+                    row = [entry.replace(',', '.') for entry in row]
+                    if float(row[1]) >= 0:
+                        displacement.append(float(row[2]))  # Column 3 for Displacement
+                        force.append(float(row[1]))  # Column 2 for Force
     except FileNotFoundError:
         print("Error: File not found.")
     except Exception as e:
-        print("An error occurred:", e)
+            if not force and not displacement:
+                with open(file_path, 'r') as csvfile:
+                    csvreader = csv.reader(csvfile)
+                    header = next(csvreader)  # Skip the header row
+                    for row in csvreader:
+                        displacement.append(float(row[0]))
+                        force.append(float(row[1]))
     return displacement, force
 
-def analyze_data(displacement, force):
 
+def analyze_data(displacement, force):
     # Analyze the data for the Maximum Measured Load and calculate the linear equation between 20% and 70% load.
 
     max_force_index = np.argmax(force)
@@ -102,6 +108,9 @@ def calc_E1f(file_path,specimen_Name,X,m,P):
         workbook = openpyxl.load_workbook(file_path)
         sheet = workbook.active
 
+        # Default values in case the specimen name is not found
+        b = h = a0 = L = c = Csys = None
+
         # Extracting values from the Excel sheet (assuming X is in cell A1)
 
         # Search for the string "csv_name" within the range A13:A100
@@ -115,6 +124,14 @@ def calc_E1f(file_path,specimen_Name,X,m,P):
                 L = sheet.cell(row=row_number, column=5).value
                 c = sheet.cell(row=row_number, column=6).value
                 Csys = sheet.cell(row=row_number, column=7).value
+
+            if b is None or h is None or a0 is None or L is None or c is None or Csys is None:
+                b = sheet.cell(row=13, column=2).value
+                h = (sheet.cell(row=13, column=3).value) / 2
+                a0 = sheet.cell(row=13, column=4).value
+                L = sheet.cell(row=13, column=5).value
+                c = sheet.cell(row=13, column=6).value
+                Csys = sheet.cell(row=13, column=7).value
 
 
         E1f =(8*(a0+X*h)**3*(3*c-L)**2+(6*(a0+0.42*h*X)**3+4*L**3)*(c+L)**2)/(16*L**2*b*h**3*(1/m-Csys))
@@ -214,6 +231,7 @@ for csv_file_path in csv_files:
     plt.savefig(f'{csv_file_path[:-4]}.png', format="png", dpi=400)
     plt.cla()
 print(GC_List)
+
 with open('output.csv', 'w', newline='') as f:
     writer = csv.writer(f, delimiter=';')
     writer.writerows(GC_List)
