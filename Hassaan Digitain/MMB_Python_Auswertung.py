@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
-from scipy.integrate import trapz
+#from scipy.integrate import trapz
 import glob
 import openpyxl
+
 
 ######################################################################################################################
 ######################################### Kolletition of needed Functions ############################################
